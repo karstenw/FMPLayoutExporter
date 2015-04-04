@@ -1,0 +1,39 @@
+<h1 id="filemaker-layout-exporter">FileMaker-Layout-Exporter</h1>
+
+<p>OSX app to export FileMaker Layouts as PDF &amp; XML.</p>
+
+<p>Tested on OSX 10.6. May work on higher versions but I don&#8217;t expect ot to run on OSX 10.10.</p>
+
+<p>Tested with FileMaker Pro Advanced Versions 9&#8211;11. Higher versions may or may not work.</p>
+
+<p>If the database files do not use custom menus and the &#8220;Layout mode&#8221; menu item is present,
+it may work with &#8220;FileMaker Pro&#8221;.</p>
+
+<p>The application is flaky. The layout selection does not work right. Start, expand all, select all, export &amp; quit. <strong>Don&#8217;t play around</strong>.</p>
+
+<p>I&#8217;ve observed 5%&#8211;20% damaged pdf files. The app just does a copy of all layout elements and writes the clipboard contents into a file.</p>
+
+<p>The source code is in a horrible state and the outline code is buggy. Usually I need this app once per project, so the incentive for a more polished app is near zero. YMMV.</p>
+
+<h2 id="usage">Usage</h2>
+
+<ul>
+<li><p>Make sure that you use &#8220;FileMaker Pro Advanced&#8221;</p></li>
+<li><p>Make sure you have a backup of the database</p></li>
+<li><p>Start your FileMaker database with <strong>[Full Access]</strong> and make sure all files are open.</p></li>
+<li><p>Start FMPLayoutExporter</p></li>
+<li><p>The app will iterate through all the database files and switch them to layout mode.</p></li>
+<li><p>A window will open with an outline of all the database files.</p></li>
+<li><p>press cmd-a (select all), right arrow (expand outline nodes), cmd-a</p></li>
+<li><p>click &#8220;Export&#8221;</p></li>
+<li><p>A dialog opens. Select an empty folder where the export should go. Click &#8220;Export&#8221;.</p></li>
+<li><p><strong>WARNING:</strong> If the folder is not empty, identical filenames will be overwritten without asking.</p></li>
+<li><p>For each layout selected in the outline, 2 files will be created:
+DBNAME_LAYOUTINDEX_LAYOUTNAME.pdf and
+DBNAME_LAYOUTINDEX_LAYOUTNAME.xml</p></li>
+<li><p>Quit the application.</p></li>
+</ul>
+
+<h2 id="whatisitgoodfor">What is it good for?</h2>
+
+<p>The important part </p>
