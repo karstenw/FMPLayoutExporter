@@ -9,8 +9,8 @@ import os
 from distutils.core import setup
 import py2app
 
-appname = "FMP Layout Eporter"
-appnameshort = "Layoutexporter"
+appname = "FileMaker Layout Eporter"
+appnameshort = "FMPLayoutexporter"
 version = "V0.1.0"
 
 copyright = u"Copyright 2009-2015 Karsten Wolf"
