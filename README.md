@@ -15,6 +15,8 @@ I've observed 5%-20% damaged pdf files. The app just does a copy of all layout e
 The source code is in a horrible state and the outline code is buggy. Usually I need this app once per project, so the incentive for a more polished app is near zero. YMMV.
 
 
+## Download (goes to dropbox)
+http://goo.gl/AZVMVj
 
 
 ## Usage
