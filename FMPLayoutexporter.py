@@ -93,7 +93,7 @@ class OutlineWindowController(NSWindowController):
         data = {}
         for item in selectedItems:
             n,d,w,p = item.name, item.dbref,item.winref,item.parent
-            if not w:
+            if w == u"window":
                 continue
             if d not in data:
                 data[d] = []

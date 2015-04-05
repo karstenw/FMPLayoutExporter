@@ -52,11 +52,15 @@ DBNAME_LAYOUTINDEX_LAYOUTNAME.xml
 
 The app is written in Python with py2app & PyObjc. It controls FileMaker via AppleEvents.
 
-On launch, the app detects a running FileMaker, gets it's documents, tries to go to layout mode for each document and opens the window with the files & layouts to select.
+On launch, the app detects a running FileMaker, gets it's documents, tries to go to layout mode for each document and finally opens it's own window with with an outline of the files & layouts to select.
 
 At export it goes to each layout of each document, does a "select all" & copy, extracts the PDF and XML data from the pasteboard and writes them into files.
 
-For this to work, the Filemaker application needs to be set to the english or german language, since it tries menu entries (Edit->Select All or Bearbeiten->Alles auswählen") in that order. Other languages are possible if the exact wording for "Edit", "Select All", "Copy", "View", Layout Mode", "Tools", "Custom Menus" and "[Standard FileMaker Menus]" are known.
+A note: when copying items in FileMaker layouts, FileMaker places several data formats on the pasteboard (which was called clipboard in it's former incarnation). It used to XML, PDF & PICT (the classic Mac image format). With FileMaker 11 this has been reduced to XML & PDF; PICT has been deprecated for many years. FMPLayoutExporter tells FileMaker to select all layout items and copy them and looks at what FileMaker has put on the pasteboard. If it finds the types for XML and/or PDF, they will be written into files.
+
+For this to work, the Filemaker application needs to be set to the english or german language. FMPLayoutExporter literally tells Filemaker to "select menu item "Copy" of menu "Edit". So all those necessary menus must be present and selectable. 
+
+FMPLayoutExporter can be made to work with other languages as long as the exact wording for "Edit", "Select All", "Copy", "View", Layout Mode", "Tools", "Custom Menus" and "[Standard FileMaker Menus]" are known.
 
 
 ## Compiling
@@ -69,9 +73,9 @@ Install
 
 + PyObjC <http://pythonhosted.org/pyobjc/install.html>
 
-```
++ In Terminal do```
 python setup.py py2app
-```
+``` in the source folder.
 
 ## Changes
 

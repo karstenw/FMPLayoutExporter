@@ -42,11 +42,15 @@ DBNAME_LAYOUTINDEX_LAYOUTNAME.xml</p></li>
 
 <p>The app is written in Python with py2app &amp; PyObjc. It controls FileMaker via AppleEvents.</p>
 
-<p>On launch, the app detects a running FileMaker, gets it&#8217;s documents, tries to go to layout mode for each document and opens the window with the files &amp; layouts to select.</p>
+<p>On launch, the app detects a running FileMaker, gets it&#8217;s documents, tries to go to layout mode for each document and finally opens it&#8217;s own window with with an outline of the files &amp; layouts to select.</p>
 
 <p>At export it goes to each layout of each document, does a &#8220;select all&#8221; &amp; copy, extracts the PDF and XML data from the pasteboard and writes them into files.</p>
 
-<p>For this to work, the Filemaker application needs to be set to the english or german language, since it tries menu entries (Edit-&gt;Select All or Bearbeiten-&gt;Alles auswählen&#8220;) in that order. Other languages are possible if the exact wording for &#8221;Edit&#8220;, &#8221;Select All&#8220;, &#8221;Copy&#8220;, &#8221;View&#8220;, Layout Mode&#8221;, &#8220;Tools&#8221;, &#8220;Custom Menus&#8221; and &#8220;[Standard FileMaker Menus]&#8221; are known.</p>
+<p>A note: when copying items in FileMaker layouts, FileMaker places several data formats on the pasteboard (which was called clipboard in it&#8217;s former incarnation). It used to XML, PDF &amp; PICT (the classic Mac image format). With FileMaker 11 this has been reduced to XML &amp; PDF; PICT has been deprecated for many years. FMPLayoutExporter tells FileMaker to select all layout items and copy them and looks at what FileMaker has put on the pasteboard. If it finds the types for XML and/or PDF, they will be written into files.</p>
+
+<p>For this to work, the Filemaker application needs to be set to the english or german language. FMPLayoutExporter literally tells Filemaker to &#8220;select menu item &#8221;Copy&#8220; of menu &#8221;Edit&quot;. So all those necessary menus must be present and selectable. </p>
+
+<p>FMPLayoutExporter can be made to work with other languages as long as the exact wording for &#8220;Edit&#8221;, &#8220;Select All&#8221;, &#8220;Copy&#8221;, &#8220;View&#8221;, Layout Mode&#8220;, &#8221;Tools&#8220;, &#8221;Custom Menus&#8220; and &#8221;[Standard FileMaker Menus]&quot; are known.</p>
 
 <h2 id="compiling">Compiling</h2>
 
@@ -56,10 +60,10 @@ DBNAME_LAYOUTINDEX_LAYOUTNAME.xml</p></li>
 <li><p>Python 2.7 (2.7.9 is current) <a href="https://www.python.org/downloads/">https://www.python.org/downloads/</a></p></li>
 <li><p>py2app <a href="https://pythonhosted.org/py2app/install.html">https://pythonhosted.org/py2app/install.html</a></p></li>
 <li><p>PyObjC <a href="http://pythonhosted.org/pyobjc/install.html">http://pythonhosted.org/pyobjc/install.html</a></p></li>
+<li><p>In Terminal do<code>
+python setup.py py2app
+</code> in the source folder.</p></li>
 </ul>
-
-<pre><code>python setup.py py2app
-</code></pre>
 
 <h2 id="changes">Changes</h2>
 
