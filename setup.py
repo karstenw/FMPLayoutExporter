@@ -11,7 +11,7 @@ import py2app
 
 appname = "FileMaker Layout Eporter"
 appnameshort = "FMPLayoutexporter"
-version = "V0.1.0"
+version = "V0.2.0"
 
 copyright = u"Copyright 2009-2015 Karsten Wolf"
 
@@ -21,7 +21,7 @@ infostr = appname + u' ' + version + u' ' + copyright
 
 setup(
     app=[{
-        'script': "FMPHelper.py",
+        'script': "FMPLayoutexporter.py",
 
         'plist':{
             'CFBundleGetInfoString': infostr,
@@ -35,7 +35,7 @@ setup(
             'NSHumanReadableCopyright': copyright}}],
 
     data_files=["English.lproj/MainMenu.nib",
-                "English.lproj/PythonBrowser.nib",
+                "English.lproj/OutlineWindow.nib",
                 "Icon.icns"],
     options={
         'py2app':{

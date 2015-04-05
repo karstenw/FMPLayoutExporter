@@ -25,7 +25,7 @@ NSString = AppKit.NSString
 NSMutableString = AppKit.NSMutableString
 
 
-class PythonBrowserModel(Foundation.NSObject):
+class OutlineModel(Foundation.NSObject):
     """This is a delegate as well as a data source for NSOutlineViews."""
 
     def initWithObject_(self, obj):
@@ -108,30 +108,6 @@ class OutlineNode(NSObject):
 
     """Wrapper class for items to be displayed in the outline view."""
 
-    # We keep references to all child items (once created). This is
-    # neccesary because NSOutlineView holds on to OutlineNode instances
-    # without retaining them. If we don't make sure they don't get
-    # garbage collected, the app will crash. For the same reason this
-    # class _must_ derive from NSObject, since otherwise autoreleased
-    # proxies will be fed to NSOutlineView, which will go away too soon.
-
-    # attributes of OutlineNode:
-    # name
-    # value
-    # comment
-    # type
-    # parent
-    # children
-    #
-    # displayValue
-    #
-
-    #
-    # to be added
-    #
-    # nodeAttributes
-
-    # that's the deal
     def __new__(cls, *args, **kwargs):
         return cls.alloc().init()
 
@@ -142,11 +118,7 @@ class OutlineNode(NSObject):
         self.dbref = db
         self.winref = win
         self.parent = parent
-
-        # these must exists before any name/value is set
         self.children = NSMutableArray.arrayWithCapacity_( 200 )
-
-        # leave this here or bad things will happen
         self.retain()
 
     def __repr__(self):
@@ -154,15 +126,7 @@ class OutlineNode(NSObject):
 
     def dealloc(self):
         print "OutlineNode.dealloc()"
-        # pp(self.__dict__)
         self.children.release()
-
-        # 2013-05-15
-        # currently crashes during dict dealloc.
-        # seems like I'm on the right way to deallocation...
-        psolved = False
-        if psolved:
-            super(OutlineNode, self).dealloc()
 
     def noOfChildren(self):
         return self.children.count()
@@ -170,12 +134,10 @@ class OutlineNode(NSObject):
     def addChild_(self, child):
         if kwlog and 0:
             print "OutlineNode.addChild_", child
-        # retain: child+1
         if isinstance(child, OutlineNode):
             if child.parent != self:
                 child.parent = self
             self.children.addObject_( child )
-            # child.release()
 
     def addChild_atIndex_(self, child, index):
         if kwdbg:

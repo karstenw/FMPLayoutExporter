@@ -21,15 +21,15 @@ NSWindowController = AppKit.NSWindowController
 import PyObjCTools
 import PyObjCTools.AppHelper
 
-import PythonBrowser
-PythonBrowserModel = PythonBrowser.PythonBrowserModel
+import OutlineModelDelegate
+OutlineModel = OutlineModelDelegate.OutlineModel
 
 import appscript
 import fmpa10
 
 
-# class defined in PythonBrowser.nib
-class PythonBrowserWindowController(NSWindowController):
+# class defined in OutlineWindow.nib
+class OutlineWindowController(NSWindowController):
     # the actual base class is NSWindowController
 
     cbPDF = objc.IBOutlet()
@@ -40,11 +40,11 @@ class PythonBrowserWindowController(NSWindowController):
         return cls.alloc().initWithObject_(obj)
 
     def initWithObject_(self, obj):
-        self = self.initWithWindowNibName_("PythonBrowser")
+        self = self.initWithWindowNibName_("OutlineWindow")
 
         self.setWindowTitleForObject_(None)
 
-        self.model = PythonBrowserModel.alloc().initWithObject_(obj)
+        self.model = OutlineModel.alloc().initWithObject_(obj)
 
         self.outlineView.setDataSource_(self.model)
         self.outlineView.setDelegate_(self.model)
@@ -133,7 +133,7 @@ class PythonBrowserAppDelegate(Foundation.NSObject):
             return 
         data = getFMPData( fpa )
         #pdb.set_trace()
-        PythonBrowserWindowController( data )
+        OutlineWindowController( data )
 
     def outlineViewSelectionDidChange_(self, sender):
         pass
