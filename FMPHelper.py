@@ -22,7 +22,6 @@ import PyObjCTools
 import PyObjCTools.AppHelper
 
 import PythonBrowser
-DBDict = PythonBrowser.DBDict
 PythonBrowserModel = PythonBrowser.PythonBrowserModel
 
 import appscript
@@ -42,12 +41,16 @@ class PythonBrowserWindowController(NSWindowController):
 
     def initWithObject_(self, obj):
         self = self.initWithWindowNibName_("PythonBrowser")
-        self.setWindowTitleForObject_(obj)
+
+        self.setWindowTitleForObject_(None)
+
         self.model = PythonBrowserModel.alloc().initWithObject_(obj)
+
         self.outlineView.setDataSource_(self.model)
         self.outlineView.setDelegate_(self.model)
         self.outlineView.setTarget_(self)
-        self.outlineView.setDoubleAction_("doubleClick:")
+        # self.outlineView.setDoubleAction_("doubleClick:")
+
         self.window().makeFirstResponder_(self.outlineView)
         self.cbPDF.setState_(True)
         self.cbXML.setState_(True)
@@ -60,20 +63,12 @@ class PythonBrowserWindowController(NSWindowController):
         self.autorelease()
 
     def setWindowTitleForObject_(self, obj):
-        title = unicode("FMP-Layout-Exporter")
-        self.window().setTitle_(title)
+        self.window().setTitle_( u"FMP-Layout-Exporter" )
 
     def setObject_(self, obj):
         self.setWindowTitleForObject_(obj)
         self.model.setObject_(obj)
         self.outlineView.reloadData()
-
-    def doubleClick_(self, sender):
-        # Open a new browser window for each selected expandable item
-        for row in self.outlineView.selectedRowEnumerator():
-            item = self.outlineView.itemAtRow_(row)
-            if item.isExpandable():
-                PythonBrowserWindowController(item.object)
 
     @objc.IBAction
     def export_(self, sender):
@@ -81,23 +76,34 @@ class PythonBrowserWindowController(NSWindowController):
         createXML = self.cbXML.state()
         m = self.model
         ov = self.outlineView
-        sel = ov.selectedRowIndexes()
 
-        root = m.root
-        dbs = root._childRefs.values()
-        d = dict()
-        for db in dbs:
-            dbname = db.name
-            d[ dbname ] = []
-            layos = db._childRefs.values()
-            for layo in layos:
-                if layo.selection:
-                    d[ dbname ].append(layo.name)
+        # pdb.set_trace()
+        sel = ov.selectedRowIndexes()
+        selectedItems = []
+        n = 0
+        if sel:
+            n = sel.count()
+        next = sel.firstIndex()
+        selectedItems.append( ov.itemAtRow_(next) )
+
+        for i in range(1, n):
+            next = sel.indexGreaterThanIndex_(next)
+            selectedItems.append( ov.itemAtRow_(next) )
+
+        data = {}
+        for item in selectedItems:
+            n,d,w,p = item.name, item.dbref,item.winref,item.parent
+            if not w:
+                continue
+            if d not in data:
+                data[d] = []
+            data[d].append( (n,w) )
+        
         fld = getFolderDialog()
 
         if fld:
             fld = fld[0]
-            thread.start_new_thread(doExport, (d,
+            thread.start_new_thread(doExport, (data,
                                                fld,
                                                createPDF,
                                                createXML) )
@@ -111,7 +117,7 @@ def doExport(d, fld, createPDF, createXML ):
         win = doc.windows[1]
         if os.path.exists( fld ):
             if v:
-                iter_layouts( win, v, fld, createPDF, createXML )
+                iter_layouts( k, win, v, fld, createPDF, createXML )
     del pool
 
 
@@ -122,7 +128,11 @@ class PythonBrowserAppDelegate(Foundation.NSObject):
 
     @objc.IBAction
     def newBrowser_(self, sender):
-        data = getFMPData()
+        fpa = get_fmp( True )
+        if not fpa:
+            return 
+        data = getFMPData( fpa )
+        #pdb.set_trace()
         PythonBrowserWindowController( data )
 
     def outlineViewSelectionDidChange_(self, sender):
@@ -179,22 +189,19 @@ def get_fmp_docs():
         return []
     return fpa.documents()
 
-def getFMPData():
+def getFMPData( fpa ):
     """Get open databases as documentrefs from filemaker.
 
     If db return databaserefs.
     """
     d = {}
-    fpa = get_fmp( True )
-    if not fpa:
-        return d
-
     docs = fpa.documents()
 
     if docs:
         fpa.windows.visible.set(False)
         for doc in docs:
             doc.show()
+            dname = doc.name()
             win = fpa.windows[ 1 ].name()
             if win.endswith( ')' ):
                 winregex = re.compile("^(.+) \([-a-zA-Z0-9_%\.]+\)")
@@ -215,9 +222,10 @@ def getFMPData():
             ok = do_menu_LAYOUTMODE()
             if ok:
                 lnames = winref.layouts.name()
-                d[name] = DBDict(name)
-                for l in lnames:
-                    d[name].set_key_value(l, None)
+                lids = winref.layouts.ID_()
+                d[dname] = []
+                for l in zip(lids,lnames):
+                    d[dname].append( (l[0],l[1]) )
             winref.visible.set(False)
     return d
 
@@ -301,31 +309,48 @@ def do_menu_BROWSEMODE():
             pass
     return ok
 
-def iter_layouts( winref, layolist, outfolder, doPDF, doXML ):
+def iter_layouts( docname, winref, layolist, outfolder, doPDF, doXML ):
     fpa = get_fmp( True )
     if not fpa:
         return False
 
     # we should be in Layout mode now
-    winname = winref.name()
+    # docname = winref.name()
     
-    if winname.endswith( ')' ):
+    if docname.endswith( ')' ):
         winregex = re.compile("^(.+) \([-a-zA-Z0-9_%\.]+\)")
-        m = winregex.match( winname )
+        m = winregex.match( docname )
         if m:
-            winname = m.groups()[0]
+            docname = m.groups()[0]
+
+    allLayoutnames = winref.layouts.name()
 
     winref.visible.set(True)
     winref.show()
     winref.go_to()
 
-    for i, ln in enumerate( layolist ):
-        # the REAL index 1; one based
-        ri = i + 1
+    # pdb.set_trace()
+    idx = 0
+    for layo in layolist:
+        idx += 1
+        
+        name, id_ = layo
+        
+        layIndex = -1
+        try:
+            layIndex = allLayoutnames.index( name )
+            # fmp layouts are 1-based
+            layIndex += 1
+        except Exception, err:
+            print
+            print "ERROR"
+            print err
+        
+        sid = str(id_).rjust(7,"0")
+        s = u"Layout id=%s    %i/%i  -  '%s'  -  '%s'" % (sid, layIndex, len(allLayoutnames), docname, name)
+        print s.encode("utf-8")
 
-        print "Layout %i/%i" % (ri, len(layolist))
-
-        winref.layouts[ ln ].go_to(timeout=600)
+        winref.layouts[ appscript.its.ID_==id_ ].go_to( timeout=600 )
 
         # select all
         ok = do_menu_SELECTALL()
@@ -339,38 +364,38 @@ def iter_layouts( winref, layolist, outfolder, doPDF, doXML ):
                     pbtypes = pboard.types()
 
                     # make it "filenameable"
-                    fname = winname.replace(".", "_")
+                    fname = docname.replace(".", "_")
                     fname = fname.replace("/", "_")
-                    idx = "0000" + str(ri)
-                    idx = idx[-5:]
-                    ln = ln.replace(".", "_")
+                    lidx = "0000" + str(layIndex)
+                    lidx = lidx[-5:]
+                    ln = name.replace(".", "_")
                     ln = ln.replace("/", "_")
+                    ln = ln.replace(":", "_")
 
-                    fname = fname + "_" + idx + "_" + ln
+                    fname = fname + "_" + lidx + "_" + ln
 
                     fname = os.path.join(outfolder, fname)
 
                     for t in pbtypes:
-                        if 1: # try:
-                            data = str(pboard.dataForType_( t ) )
-                            if type(ln) == str:
-                                ln = unicode(ln, "utf-8")
-                            try:
-                                ln = ln.encode("utf-8")
-                                t = t.encode("utf-8")
-                            except Exception,v:
-                                print; print "ERROR"
-                                print v
-                            if t == u'CorePasteboardFlavorType 0x584D4C4F':
-                                if doXML:
-                                    f = open ( fname + ".xml", 'wb')
-                                    f.write( data )
-                                    f.close()
-                            elif t == u'Apple PDF pasteboard type':
-                                if doPDF:
-                                    f = open ( fname + ".pdf", 'wb')
-                                    f.write( data )
-                                    f.close()
+                        data = str(pboard.dataForType_( t ) )
+                        if type(ln) == str:
+                            ln = unicode(ln, "utf-8")
+                        try:
+                            ln = ln.encode("utf-8")
+                            t = t.encode("utf-8")
+                        except Exception,v:
+                            print; print "ERROR"
+                            print v
+                        if t == u'CorePasteboardFlavorType 0x584D4C4F':
+                            if doXML:
+                                f = open ( fname + ".xml", 'wb')
+                                f.write( data )
+                                f.close()
+                        elif t == u'Apple PDF pasteboard type':
+                            if doPDF:
+                                f = open ( fname + ".pdf", 'wb')
+                                f.write( data )
+                                f.close()
     winref.visible.set(False)
 
 def iterwindows():

@@ -9,7 +9,7 @@
 <p>If the database files do not use custom menus and the &#8220;Layout mode&#8221; menu item is present,
 it may work with &#8220;FileMaker Pro&#8221;.</p>
 
-<p>The application is flaky. The layout selection does not work right. Start, expand all, select all, export &amp; quit. <strong>Don&#8217;t play around</strong>.</p>
+<p>The application is flaky. Start, expand all, select all, export &amp; quit. <strong>Don&#8217;t play around</strong>.</p>
 
 <p>I&#8217;ve observed 5%&#8211;20% damaged pdf files. The app just does a copy of all layout elements and writes the clipboard contents into a file.</p>
 
@@ -36,4 +36,34 @@ it may work with &#8220;FileMaker Pro&#8221;.</p>
 DBNAME_LAYOUTINDEX_LAYOUTNAME.pdf and
 DBNAME_LAYOUTINDEX_LAYOUTNAME.xml</p></li>
 <li><p>Quit the application.</p></li>
+</ul>
+
+<h2 id="howdoesitwork">How does it work?</h2>
+
+<p>The app is written in Python with py2app &amp; PyObjc. It controls FileMaker via AppleEvents.</p>
+
+<p>On launch, the app detects a running FileMaker, gets it&#8217;s documents, tries to go to layout mode for each document and opens the window with the files &amp; layouts to select.</p>
+
+<p>At export it goes to each layout of each document, does a &#8220;select all&#8221; &amp; copy, extracts the PDF and XML data from the pasteboard and writes them into files.</p>
+
+<p>For this to work, the Filemaker application needs to be set to the english or german language, since it tries menu entries (Edit-&gt;Select All or Bearbeiten-&gt;Alles auswählen&#8220;) in that order. Other languages are possible if the exact wording for &#8221;Edit&#8220;, &#8221;Select All&#8220;, &#8221;Copy&#8220;, &#8221;View&#8220;, Layout Mode&#8221;, &#8220;Tools&#8221;, &#8220;Custom Menus&#8221; and &#8220;[Standard FileMaker Menus]&#8221; are known.</p>
+
+<h2 id="compiling">Compiling</h2>
+
+<p>Install</p>
+
+<ul>
+<li><p>Python 2.7 (2.7.9 is current) <a href="https://www.python.org/downloads/">https://www.python.org/downloads/</a></p></li>
+<li><p>py2app <a href="https://pythonhosted.org/py2app/install.html">https://pythonhosted.org/py2app/install.html</a></p></li>
+<li><p>PyObjC <a href="http://pythonhosted.org/pyobjc/install.html">http://pythonhosted.org/pyobjc/install.html</a></p></li>
+</ul>
+
+<pre><code>python setup.py py2app
+</code></pre>
+
+<h2 id="changes">Changes</h2>
+
+<ul>
+<li><p>v0.1.0 2015&#8211;04&#8211;04 - OSX 10.6, pyobjc 3.1 update of a 8 year old beginners project </p></li>
+<li><p>v0.2.0 2015&#8211;04&#8211;05 - Completely replaced the outline internals. Selection now works.</p></li>
 </ul>
