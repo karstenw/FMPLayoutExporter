@@ -73,9 +73,7 @@ Install
 
 + PyObjC <http://pythonhosted.org/pyobjc/install.html>
 
-+ In Terminal do```
-python setup.py py2app
-``` in the source folder.
++ In Terminal do  ```python setup.py py2app```  in the source folder.
 
 ## Changes
 
