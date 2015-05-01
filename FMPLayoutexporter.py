@@ -163,16 +163,17 @@ def get_fmp(bringtofront=True):
     e = appscript.app("System Events.app")
     if not e.isrunning():
         e.activate()
-    pl = e.processes[ appscript.its.creator_type=='FMP7' ].properties()
+    pl = e.processes[ appscript.its.name.beginswith("FileMaker Pro") ].processes.file.get()
     fpa = None
     pl.sort()
     pl.reverse()
     if pl:
         for p in pl:
-            f = p.get(appscript.k.file, False)
+            # f = p.get(appscript.k.file, False)
+            f = p.path
             if not f:
                 continue
-            fpa = appscript.app(f.path, terms=fmpa10)
+            fpa = appscript.app(f, terms=fmpa10)
             if fpa.isrunning():
                 break
     if fpa and bringtofront:
