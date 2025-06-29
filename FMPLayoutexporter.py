@@ -24,6 +24,7 @@ import PyObjCTools.AppHelper
 import OutlineModelDelegate
 OutlineModel = OutlineModelDelegate.OutlineModel
 
+import mactypes
 import appscript
 import fmpa10
 
@@ -128,6 +129,7 @@ class PythonBrowserAppDelegate(Foundation.NSObject):
 
     @objc.IBAction
     def newBrowser_(self, sender):
+        # pdb.set_trace()
         fpa = get_fmp( True )
         if not fpa:
             return 
@@ -163,19 +165,28 @@ def get_fmp(bringtofront=True):
     e = appscript.app("System Events.app")
     if not e.isrunning():
         e.activate()
-    pl = e.processes[ appscript.its.name.beginswith("FileMaker Pro") ].processes.file.get()
+    # pl = e.processes[ appscript.its.name.beginswith("FileMaker Pro") ].processes.file.get()
+    pl = e.application_processes[appscript.its.name.beginswith(u'FileMaker Pro')].file.get()
     fpa = None
     pl.sort()
     pl.reverse()
-    if pl:
-        for p in pl:
-            # f = p.get(appscript.k.file, False)
-            f = p.path
-            if not f:
-                continue
-            fpa = appscript.app(f, terms=fmpa10)
-            if fpa.isrunning():
-                break
+    if 0:
+        if pl:
+            for p in pl:
+                pdb.set_trace()
+                # f = p.get(appscript.k.file, False)
+                print type(p)
+                print repr(p)
+                f = p.path
+                if not f:
+                    continue
+                # fpa = appscript.app(f, terms=fmpa10)
+                fpa = appscript.app(f)
+                if fpa.isrunning():
+                    break
+    else:
+        p = "/Applications/+db/FileMaker/Filemaker Pro 15 Advanced/FileMaker Pro 15 Advanced.app"
+        fpa = appscript.app( p )
     if fpa and bringtofront:
         fpa.activate()
     return fpa
@@ -196,8 +207,8 @@ def getFMPData( fpa ):
     If db return databaserefs.
     """
     d = {}
+    # pdb.set_trace()
     docs = fpa.documents()
-
     if docs:
         fpa.windows.visible.set(False)
         for doc in docs:
@@ -387,7 +398,8 @@ def iter_layouts( docname, winref, layolist, outfolder, doPDF, doXML ):
                         except Exception,v:
                             print; print "ERROR"
                             print v
-                        if t == u'CorePasteboardFlavorType 0x584D4C4F':
+                        if t in (u'CorePasteboardFlavorType 0x584D4C4F',
+                                 u'CorePasteboardFlavorType 0x584D4C32'):
                             if doXML:
                                 f = open ( fname + ".xml", 'wb')
                                 f.write( data )
@@ -397,6 +409,11 @@ def iter_layouts( docname, winref, layolist, outfolder, doPDF, doXML ):
                                 f = open ( fname + ".pdf", 'wb')
                                 f.write( data )
                                 f.close()
+                        elif t in ("public.jpeg",):
+                            f = open ( fname + ".jpg", 'wb')
+                            f.write( data )
+                            f.close()
+                        del data
     winref.visible.set(False)
 
 def iterwindows():

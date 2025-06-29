@@ -11,9 +11,9 @@ import py2app
 
 appname = "FileMaker Layout Eporter"
 appnameshort = "FMPLayoutexporter"
-version = "V0.2.0"
+version = "V0.2.1"
 
-copyright = u"Copyright 2009-2015 Karsten Wolf"
+copyright = u"Copyright 2009-2021 Karsten Wolf"
 
 infostr = appname + u' ' + version + u' ' + copyright
 

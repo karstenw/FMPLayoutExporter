@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<opml version="1.0">
+  <head>
+    <title>FileMaker Layout Exporter-plan</title>
+    <expansionState>1</expansionState>
+  </head>
+  <body>
+    <outline text="Use get_fmp from AKConverter &amp; merge with get_fmp from RTBildtool"/>
+    <outline text="Make a document for every running FMP Instance">
+      <outline text="Path to app is window title"/>
+    </outline>
+    <outline/>
+  </body>
+</opml>
