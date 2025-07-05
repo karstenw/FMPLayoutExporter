@@ -2,12 +2,13 @@
 # -*- coding: utf-8 -*-
 
 import sys, os
-import thread
+import _thread as thread
+
 
 import re
 
 import pdb
-kwdbg = False
+kwdbg = True
 
 import pprint
 pp = pprint.pprint
@@ -27,6 +28,24 @@ OutlineModel = OutlineModelDelegate.OutlineModel
 import mactypes
 import appscript
 import fmpa10
+
+from basetoolslib import makeunicode
+
+
+# py3 stuff
+py3 = False
+try:
+    unicode('')
+    punicode = unicode
+    pstr = str
+    punichr = unichr
+except NameError:
+    punicode = str
+    pstr = bytes
+    py3 = True
+    punichr = chr
+    long = int
+
 
 
 # class defined in OutlineWindow.nib
@@ -104,22 +123,28 @@ class OutlineWindowController(NSWindowController):
 
         if fld:
             fld = fld[0]
-            thread.start_new_thread(doExport, (data,
-                                               fld,
-                                               createPDF,
-                                               createXML) )
+            if 0:
+                thread.start_new_thread(doExport, (data,
+                                                   fld,
+                                                   createPDF,
+                                                   createXML) )
+            else:
+                doExport(data, fld, createPDF, createXML)
+
 
 def doExport(d, fld, createPDF, createXML ):
-    pool = Foundation.NSAutoreleasePool.alloc().init()
-    fpa = get_fmp( True )
-    for k,v in d.iteritems():
+    #pool = Foundation.NSAutoreleasePool.alloc().init()
+    # pdb.set_trace()
+    fpa = get_filemaker( True )
+    for k,v in d.items():
         # get winref
+        print("k,v:", k,v)
         doc = fpa.documents[ k ]
         win = doc.windows[1]
         if os.path.exists( fld ):
             if v:
                 iter_layouts( k, win, v, fld, createPDF, createXML )
-    del pool
+    #del pool
 
 
 class PythonBrowserAppDelegate(Foundation.NSObject):
@@ -130,7 +155,7 @@ class PythonBrowserAppDelegate(Foundation.NSObject):
     @objc.IBAction
     def newBrowser_(self, sender):
         # pdb.set_trace()
-        fpa = get_fmp( True )
+        fpa = get_filemaker( True )
         if not fpa:
             return 
         data = getFMPData( fpa )
@@ -147,7 +172,7 @@ def getFolderDialog():
     panel.setAllowsMultipleSelection_(False)
     rval = panel.runModalForTypes_([])
     if rval != 0:
-        return [unicode(t) for t in panel.filenames()]
+        return [makeunicode(t) for t in panel.filenames()]
     else:
         return False
 
@@ -157,7 +182,40 @@ def getFolderDialog():
 #
 ##################################
 
-def get_fmp(bringtofront=True):
+def XXget_filemaker(bringtofront=True):
+
+    # pdb.set_trace()
+
+    okfullpath = [
+        "/Applications/FileMaker Pro.app",
+        "/Applications/FileMaker Pro Advanced.app",
+        "/Applications/FileMaker Pro 18 Advanced/FileMaker Pro 18 Advanced.app",
+        "/Applications/FileMaker Pro 19 Advanced.app",
+        "/Applications/FileMaker Pro 20.app",
+        "/Applications/FileMaker Pro 21.app",
+        "/Applications/FileMaker Pro 22.app",
+        "/Applications/+db/FileMaker/Filemaker Pro 18 Advanced/FileMaker Pro 18 Advanced.app",
+    ]
+    okfullpath.reverse()
+
+    fpa = False
+    for path in okfullpath:
+        if os.path.exists( path ):
+            fpa = appscript.app(path, terms=fmpa10)
+            break
+
+    if not fpa:
+        warningMessageMainThread( "Kein Filemaker", "Es wurde kein Filemaker gefunden.", butt2=False )
+        return False
+
+    if bringtofront:
+        fpa.activate()
+
+    return fpa
+
+
+# def get_fmp(bringtofront=True):
+def get_filemaker(bringtofront=True):
     """Create and return an application object for the default filemaker.
 
     If bringtofront it will be activated
@@ -173,11 +231,10 @@ def get_fmp(bringtofront=True):
     if 0:
         if pl:
             for p in pl:
-                pdb.set_trace()
                 # f = p.get(appscript.k.file, False)
-                print type(p)
-                print repr(p)
-                f = p.path
+                #print( type(p) )
+                #print( repr(p) )
+                f = p.path()
                 if not f:
                     continue
                 # fpa = appscript.app(f, terms=fmpa10)
@@ -185,7 +242,7 @@ def get_fmp(bringtofront=True):
                 if fpa.isrunning():
                     break
     else:
-        p = "/Applications/+db/FileMaker/Filemaker Pro 15 Advanced/FileMaker Pro 15 Advanced.app"
+        p = "/Applications/+db/FileMaker/Filemaker Pro 18 Advanced/FileMaker Pro 18 Advanced.app"
         fpa = appscript.app( p )
     if fpa and bringtofront:
         fpa.activate()
@@ -196,7 +253,7 @@ def get_fmp_docs():
 
     If db return databaserefs.
     """
-    fpa = get_fmp( True )
+    fpa = get_filemaker( True )
     if not fpa:
         return []
     return fpa.documents()
@@ -225,8 +282,8 @@ def getFMPData( fpa ):
             winref.visible.set(True)
             winref.show()
             winref.go_to()
-            # name = unicode( doc.name() )
-            name = unicode( win )
+            # name = makeunicode( doc.name() )
+            name = makeunicode( win )
 
             do_menu_STDMENUS()
 
@@ -247,82 +304,82 @@ def do_menu_STDMENUS():
 
     return True on success
     """
-    fpa = get_fmp()
+    fpa = get_filemaker()
     ok = False
     try:
         fpa.menus[ u'Tools' ].menus[ u'Custom Menus' ].menu_items[ u'[Standard FileMaker Menus]' ].do_menu()
         ok = True
-    except appscript.reference.CommandError, v:
+    except appscript.reference.CommandError as v:
         try:
             fpa.menus[ u'Werkzeuge' ].menus[ u'Angepasste Men\xfcs' ].menu_items[ u'[Standard-FileMaker-Men\xfcs]' ].do_menu()
             ok = True
-        except appscript.reference.CommandError, w:
+        except appscript.reference.CommandError as w:
             pass
-            # print "ERROR:", v
+            # print( "ERROR:", v )
     return ok
 
 def do_menu_SELECTALL():
-    fpa = get_fmp()
+    fpa = get_filemaker()
     ok = False
     try:
         fpa.menus[ u'Edit' ].menu_items[ u'Select All' ].do_menu(timeout=300)
         ok = True
-    except appscript.reference.CommandError, v:
+    except appscript.reference.CommandError as v:
         try:
             fpa.menus[ u'Bearbeiten' ].menu_items[ u'Alles ausw\xe4hlen' ].do_menu(timeout=300)
             ok = True
-        except appscript.reference.CommandError, w:
-            # print "ERROR:", v
+        except appscript.reference.CommandError as w:
+            # print( "ERROR:", v )
             pass
     return ok
 
 def do_menu_COPY():
-    fpa = get_fmp()
+    fpa = get_filemaker()
     ok = False
     try:
         fpa.menus[ u'Edit' ].menu_items[  u'Copy' ].do_menu(timeout=600)
         ok = True
-    except appscript.reference.CommandError, v:
+    except appscript.reference.CommandError as v:
         try:
             fpa.menus[ u'Bearbeiten' ].menu_items[  u'Kopieren' ].do_menu(timeout=600)
             ok = True
-        except appscript.reference.CommandError, w:
-            # print "ERROR:", v
+        except appscript.reference.CommandError as w:
+            # print( "ERROR:", v )
             pass
     return ok
 
 def do_menu_LAYOUTMODE():
-    fpa = get_fmp()
+    fpa = get_filemaker()
     ok = False
     try:
         fpa.menus[ u'View' ].menu_items[ u'Layout mode' ].do_menu(timeout=300)
         ok = True
-    except appscript.reference.CommandError, v:
+    except appscript.reference.CommandError as v:
         try:
             fpa.menus[ u'Ansicht' ].menu_items[ u'Layoutmodus' ].do_menu(timeout=300)
             ok = True
-        except appscript.reference.CommandError, w:
-            # print "ERROR:", v
+        except appscript.reference.CommandError as w:
+            # print( "ERROR:", v )
             pass
     return ok
 
 def do_menu_BROWSEMODE():
-    fpa = get_fmp()
+    fpa = get_filemaker()
     ok = False
     try:
         fpa.menus[ u'View' ].menu_items[ u'Browse mode' ].do_menu()
         ok = True
-    except appscript.reference.CommandError, v:
+    except appscript.reference.CommandError as v:
         try:
             fpa.menus[ u'Ansicht' ].menu_items[ u'Bl\xe4tternmodus' ].do_menu()
             ok = True
-        except appscript.reference.CommandError, w:
-            # print "ERROR:", v
+        except appscript.reference.CommandError as w:
+            # print( "ERROR:", v )
             pass
     return ok
 
 def iter_layouts( docname, winref, layolist, outfolder, doPDF, doXML ):
-    fpa = get_fmp( True )
+    fpa = get_filemaker( True )
     if not fpa:
         return False
 
@@ -353,14 +410,14 @@ def iter_layouts( docname, winref, layolist, outfolder, doPDF, doXML ):
             layIndex = allLayoutnames.index( name )
             # fmp layouts are 1-based
             layIndex += 1
-        except Exception, err:
-            print
-            print "ERROR"
-            print err
+        except Exception as err:
+            print(  )
+            print( "ERROR" )
+            print( err )
         
         sid = str(id_).rjust(7,"0")
         s = u"Layout id=%s    %i/%i  -  '%s'  -  '%s'" % (sid, layIndex, len(allLayoutnames), docname, name)
-        print s.encode("utf-8")
+        print( s )
 
         winref.layouts[ appscript.its.ID_==id_ ].go_to( timeout=600 )
 
@@ -369,6 +426,8 @@ def iter_layouts( docname, winref, layolist, outfolder, doPDF, doXML ):
 
         if ok:
             ok = do_menu_COPY()
+
+            # pdb.set_trace()
 
             if ok:
                 pboard = AppKit.NSPasteboard.generalPasteboard()
@@ -389,30 +448,37 @@ def iter_layouts( docname, winref, layolist, outfolder, doPDF, doXML ):
                     fname = os.path.join(outfolder, fname)
 
                     for t in pbtypes:
-                        data = str(pboard.dataForType_( t ) )
+                        data = pboard.dataForType_( t )
                         if type(ln) == str:
-                            ln = unicode(ln, "utf-8")
+                            ln = makeunicode(ln, "utf-8")
+                        #try:
+                        #    # ln = ln.encode("utf-8")
+                        #    # t = t.encode("utf-8")
+                        #except Exception as v:
+                        #    print( "\nERROR" )
+                        #    print( v )
                         try:
-                            ln = ln.encode("utf-8")
-                            t = t.encode("utf-8")
-                        except Exception,v:
-                            print; print "ERROR"
-                            print v
-                        if t in (u'CorePasteboardFlavorType 0x584D4C4F',
-                                 u'CorePasteboardFlavorType 0x584D4C32'):
-                            if doXML:
-                                f = open ( fname + ".xml", 'wb')
-                                f.write( data )
+                            if t in ( 'CorePasteboardFlavorType 0x584D4C4F',
+                                      'CorePasteboardFlavorType 0x584D4C32' ):
+                                if doXML:
+                                    f = open ( fname + ".xml", 'w')
+                                    f.write( makeunicode(bytes(data)) )
+                                    f.close()
+                            elif t == u'Apple PDF pasteboard type':
+                                if doPDF:
+                                    f = open ( fname + ".pdf", 'wb')
+                                    f.write( bytes(data) )
+                                    f.close()
+                            elif t in ("public.jpeg",):
+                                f = open ( fname + ".jpg", 'wb')
+                                f.write( bytes(data) )
                                 f.close()
-                        elif t == u'Apple PDF pasteboard type':
-                            if doPDF:
-                                f = open ( fname + ".pdf", 'wb')
-                                f.write( data )
-                                f.close()
-                        elif t in ("public.jpeg",):
-                            f = open ( fname + ".jpg", 'wb')
-                            f.write( data )
-                            f.close()
+                        except Exception as err:
+                            print()
+                            print(err)
+                            pdb.set_trace()
+                            print()
+                                
                         del data
     winref.visible.set(False)
 
@@ -427,7 +493,7 @@ def iterwindows():
         w.go_to()
         name = w.name()
 
-        # print "Database: '%s'" % name.encode("utf-8")
+        # print( "Database: '%s'" % name.encode("utf-8") )
 
         # pdb.set_trace()
 
@@ -439,7 +505,7 @@ def iterwindows():
         ok = do_menu_LAYOUTMODE()
 
         layolist = w.layouts()
-        # print "layouts:", pp(layolist)
+        # print( "layouts:", pp(layolist) )
 
         if ok:
             iter_layouts( w, layolist, outpath )

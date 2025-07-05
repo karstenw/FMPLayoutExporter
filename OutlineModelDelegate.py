@@ -86,7 +86,7 @@ class OutlineModel(Foundation.NSObject):
 
     def getSelectionItems(self):
         if kwlog:
-            print "getSelectionItems"
+            print("getSelectionItems")
         """The actual nodes of the current selection are returned."""
         sel = self.selectedRowIndexes()
         result = []
@@ -125,7 +125,7 @@ class OutlineNode(NSObject):
         return "<OutlineNode(name='%s')" % (self.name,)
 
     def dealloc(self):
-        print "OutlineNode.dealloc()"
+        print( "OutlineNode.dealloc()" )
         self.children.release()
 
     def noOfChildren(self):
@@ -133,7 +133,7 @@ class OutlineNode(NSObject):
 
     def addChild_(self, child):
         if kwlog and 0:
-            print "OutlineNode.addChild_", child
+            print( "OutlineNode.addChild_", child )
         if isinstance(child, OutlineNode):
             if child.parent != self:
                 child.parent = self
@@ -141,7 +141,7 @@ class OutlineNode(NSObject):
 
     def addChild_atIndex_(self, child, index):
         if kwdbg:
-            print "addChild_atIndex_setParent", child
+            print( "addChild_atIndex_setParent", child )
         self.children.insertObject_atIndex_( child, index)
         child.parent = self
 
