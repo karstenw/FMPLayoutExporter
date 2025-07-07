@@ -10,6 +10,8 @@ import re
 import pdb
 kwdbg = True
 
+# pdb.set_trace()
+
 import pprint
 pp = pprint.pprint
 
@@ -27,9 +29,13 @@ OutlineModel = OutlineModelDelegate.OutlineModel
 
 import mactypes
 import appscript
-import fmpa10
 
 from basetoolslib import makeunicode
+
+import fmpa10
+
+
+g_lastfoundFMP = False
 
 
 # py3 stuff
@@ -45,7 +51,6 @@ except NameError:
     py3 = True
     punichr = chr
     long = int
-
 
 
 # class defined in OutlineWindow.nib
@@ -132,20 +137,6 @@ class OutlineWindowController(NSWindowController):
                 doExport(data, fld, createPDF, createXML)
 
 
-def doExport(d, fld, createPDF, createXML ):
-    #pool = Foundation.NSAutoreleasePool.alloc().init()
-    # pdb.set_trace()
-    fpa = get_filemaker( True )
-    for k,v in d.items():
-        # get winref
-        print("k,v:", k,v)
-        doc = fpa.documents[ k ]
-        win = doc.windows[1]
-        if os.path.exists( fld ):
-            if v:
-                iter_layouts( k, win, v, fld, createPDF, createXML )
-    #del pool
-
 
 class PythonBrowserAppDelegate(Foundation.NSObject):
 
@@ -182,71 +173,44 @@ def getFolderDialog():
 #
 ##################################
 
-def XXget_filemaker(bringtofront=True):
 
-    # pdb.set_trace()
-
-    okfullpath = [
-        "/Applications/FileMaker Pro.app",
-        "/Applications/FileMaker Pro Advanced.app",
-        "/Applications/FileMaker Pro 18 Advanced/FileMaker Pro 18 Advanced.app",
-        "/Applications/FileMaker Pro 19 Advanced.app",
-        "/Applications/FileMaker Pro 20.app",
-        "/Applications/FileMaker Pro 21.app",
-        "/Applications/FileMaker Pro 22.app",
-        "/Applications/+db/FileMaker/Filemaker Pro 18 Advanced/FileMaker Pro 18 Advanced.app",
-    ]
-    okfullpath.reverse()
-
-    fpa = False
-    for path in okfullpath:
-        if os.path.exists( path ):
-            fpa = appscript.app(path, terms=fmpa10)
-            break
-
-    if not fpa:
-        warningMessageMainThread( "Kein Filemaker", "Es wurde kein Filemaker gefunden.", butt2=False )
-        return False
-
-    if bringtofront:
-        fpa.activate()
-
-    return fpa
-
-
-# def get_fmp(bringtofront=True):
 def get_filemaker(bringtofront=True):
     """Create and return an application object for the default filemaker.
 
     If bringtofront it will be activated
     """
+    global g_lastfoundFMP
+    
+    if g_lastfoundFMP:
+        fpa = appscript.app( g_lastfoundFMP, terms=fmpa10)
+        if fpa and bringtofront:
+            fpa.activate()
+        return fpa
+    
     e = appscript.app("System Events.app")
     if not e.isrunning():
         e.activate()
-    # pl = e.processes[ appscript.its.name.beginswith("FileMaker Pro") ].processes.file.get()
-    pl = e.application_processes[appscript.its.name.beginswith(u'FileMaker Pro')].file.get()
+    pl = e.application_processes[appscript.its.name.beginswith( 'FileMaker Pro' )].file.get()
     fpa = None
     pl.sort()
     pl.reverse()
-    if 0:
+    if 1:
         if pl:
             for p in pl:
-                # f = p.get(appscript.k.file, False)
-                #print( type(p) )
-                #print( repr(p) )
-                f = p.path()
+                f = p.POSIX_path()
                 if not f:
                     continue
-                # fpa = appscript.app(f, terms=fmpa10)
-                fpa = appscript.app(f)
+                
+                fpa = appscript.app( f, terms=fmpa10)
                 if fpa.isrunning():
-                    break
-    else:
-        p = "/Applications/+db/FileMaker/Filemaker Pro 18 Advanced/FileMaker Pro 18 Advanced.app"
-        fpa = appscript.app( p )
+                    g_lastfoundFMP = f
+                    if fpa and bringtofront:
+                        fpa.activate()
+                    return fpa
     if fpa and bringtofront:
         fpa.activate()
     return fpa
+
 
 def get_fmp_docs():
     """Get open databases as documentrefs from filemaker.
@@ -257,6 +221,7 @@ def get_fmp_docs():
     if not fpa:
         return []
     return fpa.documents()
+
 
 def getFMPData( fpa ):
     """Get open databases as documentrefs from filemaker.
@@ -461,8 +426,8 @@ def iter_layouts( docname, winref, layolist, outfolder, doPDF, doXML ):
                             if t in ( 'CorePasteboardFlavorType 0x584D4C4F',
                                       'CorePasteboardFlavorType 0x584D4C32' ):
                                 if doXML:
-                                    f = open ( fname + ".xml", 'w')
-                                    f.write( makeunicode(bytes(data)) )
+                                    f = open ( fname + ".xml", 'wb')
+                                    f.write( bytes(data) )
                                     f.close()
                             elif t == u'Apple PDF pasteboard type':
                                 if doPDF:
@@ -515,6 +480,22 @@ def iterwindows():
 # FileMaker Section END
 #
 ##################################
+
+
+
+def doExport(d, fld, createPDF, createXML ):
+    #pool = Foundation.NSAutoreleasePool.alloc().init()
+    # pdb.set_trace()
+    fpa = get_filemaker( True )
+    for k,v in d.items():
+        # get winref
+        print("k,v:", k,v)
+        doc = fpa.documents[ k ]
+        win = doc.windows[1]
+        if os.path.exists( fld ):
+            if v:
+                iter_layouts( k, win, v, fld, createPDF, createXML )
+    #del pool
 
 
 
