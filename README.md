@@ -2,14 +2,14 @@
 
 OSX app to export FileMaker Layouts as PDF &amp; XML.
 
-Tested on OSX 10.6. May work on higher versions but I don't expect it to run on OSX 10.10.
+Tested on OSX 10.13. May work on higher versions.
 
-Tested with FileMaker Pro Advanced Versions 9-11. Higher versions may or may not work.
+Tested with FileMaker Pro Advanced Versions 18. Higher versions may or may not work.
 
 If the database files do not use custom menus and the "Layout mode" menu item is present,
 it may work with "FileMaker Pro".
 
-I've observed 5%-20% damaged pdf files. The app just does a copy of all layout elements and writes the clipboard contents into a file.
+I've observed 5%-20% damaged pdf files. The app just does a "select all" and "copy" of all layout elements and writes the clipboard contents into a file.
 
 
 ## Download
@@ -38,7 +38,8 @@ dropbox: http://goo.gl/AZVMVj
 
 + **WARNING:** If the folder is not empty, identical filenames will be overwritten without asking.
 
-+ For each layout selected in the outline, 2 files will be created:
++ For each layout selected in the outline, 3 files will be created:
+DBNAME_LAYOUTINDEX_LAYOUTNAME.jpg
 DBNAME_LAYOUTINDEX_LAYOUTNAME.pdf and
 DBNAME_LAYOUTINDEX_LAYOUTNAME.xml
 
@@ -63,7 +64,7 @@ FMPLayoutExporter can be made to work with other languages as long as the exact 
 
 Install
 
-+ Python 2.7 (2.7.9 is current) <https://www.python.org/downloads/>
++ Python 3.11  <https://www.python.org/downloads/>
 
 + py2app <https://pythonhosted.org/py2app/install.html>
 
@@ -76,3 +77,6 @@ Install
 + v0.1.0 2015-04-04 - OSX 10.6, pyobjc 3.1 update of a 8 year old beginners project 
 
 + v0.2.0 2015-04-05 - Completely replaced the outline internals. Selection now works.
+
++ v0.3.0 2025-07-07 - Moved to Python 3.11
+
