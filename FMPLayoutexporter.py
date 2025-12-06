@@ -39,18 +39,11 @@ g_lastfoundFMP = False
 
 
 # py3 stuff
-py3 = False
-try:
-    unicode('')
-    punicode = unicode
-    pstr = str
-    punichr = unichr
-except NameError:
-    punicode = str
-    pstr = bytes
-    py3 = True
-    punichr = chr
-    long = int
+punicode = str
+pstr = bytes
+py3 = True
+punichr = chr
+long = int
 
 
 # class defined in OutlineWindow.nib
@@ -238,7 +231,7 @@ def getFMPData( fpa ):
             dname = doc.name()
             win = fpa.windows[ 1 ].name()
             if win.endswith( ')' ):
-                winregex = re.compile("^(.+) \([-a-zA-Z0-9_%\.]+\)")
+                winregex = re.compile( r"^(.+) \([-a-zA-Z0-9_%\.]+\)" )
                 m = winregex.match( win )
                 if m:
                     win = m.groups()[0]
@@ -352,7 +345,7 @@ def iter_layouts( docname, winref, layolist, outfolder, doPDF, doXML ):
     # docname = winref.name()
     
     if docname.endswith( ')' ):
-        winregex = re.compile("^(.+) \([-a-zA-Z0-9_%\.]+\)")
+        winregex = re.compile( r"^(.+) \([-a-zA-Z0-9_%\.]+\)" )
         m = winregex.match( docname )
         if m:
             docname = m.groups()[0]
