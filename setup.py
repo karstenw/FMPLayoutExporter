@@ -11,7 +11,7 @@ import py2app
 
 appname = "FileMaker Layout Eporter"
 appnameshort = "FMPLayoutexporter"
-version = "V0.3.0"
+version = "V0.3.1"
 
 copyright = u"Copyright 2009-2025 Karsten Wolf"
 
@@ -40,6 +40,19 @@ setup(
     options={
         'py2app':{
             'iconfile': "Icon.icns",
+            "excludes": [
+                'TkInter', 'tkinter', 'tk', 'wx', 'sphinx',
+                'pyqt5', 'qt5', 'PyQt5', 
+                
+                'setuptools', 'numba', 
+                
+                # 'certifi', 'pytz', 
+                'notebook', 'nbformat', 'jedi', 'testpath', 'docutils',
+                'ipykernel', 'parso', 'Cython', 'sphinx_rtd_theme', 'alabaster',
+                'tornado', 'IPython', 'numpydoc', 'nbconvert', 
+                'scipy', 'matplotlib', 
+                'pandas', 'cv2', 'dlib', 'skimage', 'sklearn', 'mpl_toolkits', 
+            ],
         },
     },
 )
