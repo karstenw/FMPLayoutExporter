@@ -1,3 +1,6 @@
+# Please do not use this app. Use [FMPasteBox](https://github.com/karstenw/FMPasteBox) instead. This app only copies layouts. FMPasteBox copies much more and exports copied stuff as a side effect.
+
+
 # FileMaker-Layout-Exporter
 
 OSX app to export FileMaker Layouts as PDF &amp; XML.
